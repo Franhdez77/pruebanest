@@ -166,4 +166,19 @@ En errores de validación, `message` es una lista de mensajes. Los conflictos de
 unicidad y relaciones se traducen a `409`; los datos inválidos, a `400`.
 Los errores inesperados devuelven `500` con un mensaje genérico.
 
-Swagger se implementará en la siguiente etapa.
+## Swagger
+
+Con la aplicación iniciada, abre **http://localhost:3000/docs**.
+La especificación OpenAPI está disponible en http://localhost:3000/docs-json.
+Si cambias `PORT`, ajusta el puerto de esas URLs.
+
+1. Usa **Try it out** en `POST /auth/register` para crear un técnico.
+2. Ejecuta `POST /auth/login` con su correo y contraseña.
+3. Copia `data.accessToken` y abre **Authorize**.
+4. En `bearer`, pega solo el token, sin escribir el prefijo `Bearer`.
+5. Prueba `GET /auth/me`. Para `/auth/admin-check` necesitas iniciar sesión con un administrador.
+6. Para integraciones, introduce el valor de `API_KEY` en el campo `api-key` de **Authorize**.
+
+Swagger documenta cuerpos de entrada, respuestas uniformes y errores. La
+autorización se elimina al recargar la página. La UI y la especificación son
+públicas; cada operación conserva sus guards de JWT, roles o API Key.

@@ -1,3 +1,10 @@
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiErrors, ApiSuccess } from '../docs/api-responses.decorator.js';
+import {
+  UserResponseDto,
+  LoginResponseDto,
+  AdminCheckResponseDto,
+} from '../docs/response.dto.js';
 import {
   Body,
   Controller,
@@ -16,11 +23,20 @@ import { Roles } from './decorators/roles.decorator.js';
 import { Role } from '../users/role.enum.js';
 import type { PublicUser } from '../users/user.entity.js';
 
+@ApiTags('Autenticación')
+@ApiErrors(500)
 @Controller('auth')
 export class AuthController {
   constructor(@Inject(AuthService) private readonly auth: AuthService) {}
 
   @Public()
+  @ApiOperation({
+    summary: 'Registrar un técnico',
+    description:
+      'Registro público. No acepta el campo role; siempre crea TECHNICIAN.',
+  })
+  @ApiSuccess(201, UserResponseDto)
+  @ApiErrors(400, 409)
   @Post('register')
   register(@Body() dto: RegisterDto) {
     return this.auth.register(dto);
@@ -28,17 +44,34 @@ export class AuthController {
 
   @Public()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Iniciar sesión',
+    description: 'El token está en data.accessToken y dura una hora.',
+  })
+  @ApiSuccess(200, LoginResponseDto)
+  @ApiErrors(400, 401)
   @Post('login')
   login(@Body() dto: LoginDto) {
     return this.auth.login(dto);
   }
 
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Consultar mi perfil' })
+  @ApiSuccess(200, UserResponseDto)
+  @ApiErrors(401)
   @Get('me')
   me(@CurrentUser() user: PublicUser) {
     return user;
   }
 
   @Roles(Role.ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Comprobar acceso ADMIN',
+    description: 'Requiere un usuario con rol ADMIN.',
+  })
+  @ApiSuccess(200, AdminCheckResponseDto)
+  @ApiErrors(401, 403)
   @Get('admin-check')
   adminCheck() {
     return { message: 'Acceso de administrador autorizado' };
